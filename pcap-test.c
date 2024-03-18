@@ -156,19 +156,19 @@ int main(int argc, char* argv[]) {
 			printf("pcap_next_ex return %d(%s)\n", res, pcap_geterr(pcap));
 			break;
 		}
-		printf("%u bytes captured\n", header->caplen);
+        // printf("%u bytes captured\n", header->caplen);
 
         // Ethernet Header - src mac / dst mac
         struct libnet_ethernet_hdr *eth_hdr = packet;
         if (ntohs(eth_hdr->ether_type) != ETHERTYPE_IP) continue;
-        printf("type = %04x \n", ntohs(eth_hdr->ether_type)); // IPv4 = 0800
+        // printf("type = %04x \n", ntohs(eth_hdr->ether_type)); // IPv4 = 0800
 
-        printf("scr mac: ");
+        printf("Ethernet Header's source mac: ");
         // src mac
-        for(int i=0; i<5; i++) printf("%02x:", eth_hdr->ether_shost[i]);
+        for(int i=0; i<5; i++) printf("%02x:", eth_hdr->ether_shost[i]); // ...ether_ntoa
         printf("%02x\n", eth_hdr->ether_shost[5]);
         // dst mac
-        printf("dst mac: ");
+        printf("Ethernet Header's destination mac: ");
         for(int i=0; i<5; i++) printf("%02x:", eth_hdr->ether_dhost[i]);
         printf("%02x\n", eth_hdr->ether_dhost[5]);
 
@@ -176,19 +176,23 @@ int main(int argc, char* argv[]) {
         // IP Header -  src ip / dst ip
         struct libnet_ipv4_hdr *ip_hdr = packet + sizeof(struct libnet_ethernet_hdr);
         if (ip_hdr->ip_p != IPPROTO_TCP) continue;
-        printf("proto = %d \n", ip_hdr->ip_p); // IPPROTO_TCP = 6
+        // printf("proto = %d \n", ip_hdr->ip_p); // IPPROTO_TCP = 6
 
         // src ip
-        printf("src ip: ");
-        printf("%x\n", htonl(ip_hdr->ip_src.s_addr));
+        printf("IP Header's source ip: ");
+        // printf("%032b\n", htonl(ip_hdr->ip_src.s_addr));
+        printf("%s\n", inet_ntoa(ip_hdr->ip_src));
 
-        printf("dst ip: ");
-        printf("%x\n", htonl(ip_hdr->ip_dst.s_addr));
+        printf("IP Header's desination ip: ");
+        printf("%s\n", inet_ntoa(ip_hdr->ip_dst));
 
 
-        // TCP Header - src port / dst port
+        // TCP Header's src port / dst port
         struct libnet_tcp_hdr *tcp_hdr = packet + sizeof(struct libnet_ethernet_hdr) + sizeof(struct libnet_ipv4_hdr);
-        // printf("%d", tcp_hdr->th_sport);
+        printf("TCP Header's source port:");
+        printf("%d\n", ntohs(tcp_hdr->th_sport));
+        printf("TCP Header's destination port:");
+        printf("%d\n", ntohs(tcp_hdr->th_dport));
 
         // Payload(Data) - hexadecimal value (Maximum : 10 Byte)
 	}
